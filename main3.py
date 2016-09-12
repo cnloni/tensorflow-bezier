@@ -45,6 +45,18 @@ def print_result(label, nc, sess, diff, feed_dict=None):
 #
 # ベジェ制御点{bs[i]:i=0,3}についての最適化
 #
+# bs0: 制御点の初期値。ndarray。shape=(4,2)
+# t0: データ点に対応する媒介変数の初期値。ndarray。shape=(n,)
+# r0: データ点の座標。ndarray。shape=(n,2)
+# rate: 学習係数
+# loop: 逐次回数
+# nc: 総ステップ数
+#
+# 注) コード中の説明で、obj.shapeという表現は簡単のためであり、
+# objがnp.ndarrayの場合は正しいが、objがtf.Tensorの場合には正しくない。
+# この場合には、tf.Tensorの場合にshapeを求めるには、tf.Tensor.get_shape()
+# 関数を使用する
+#
 def phase1(bs0, t0, r0, rate, loop, nc):
     global summary_writer
     g = tf.Graph()
@@ -83,22 +95,23 @@ def phase1(bs0, t0, r0, rate, loop, nc):
         tf.scalar_summary('diff', diff)
         summary_op = tf.merge_all_summaries()
 
-        with tf.Session(graph=g) as sess:
-            sess.run(init)
-            print_result('P1', nc, sess, diff, feed_dict)
-            for step in range(loop):
-                sess.run(train, feed_dict=feed_dict)
-                nc = nc + 1
-                if (step + 1) % 100 == 0:
-                    print_result('P1', nc, sess, diff, feed_dict)
-                    summary_str = sess.run(summary_op, feed_dict=feed_dict)
-                    summary_writer.add_summary(summary_str, nc)
-            bs1 = sess.run(bs)
-        return bs1, t0, nc
+    with tf.Session(graph=g) as sess:
+        sess.run(init)
+        print_result('P1', nc, sess, diff, feed_dict)
+        for step in range(loop):
+            sess.run(train, feed_dict=feed_dict)
+            nc = nc + 1
+            if (step + 1) % 100 == 0:
+                print_result('P1', nc, sess, diff, feed_dict)
+                summary_str = sess.run(summary_op, feed_dict=feed_dict)
+                summary_writer.add_summary(summary_str, nc)
+        bs1 = sess.run(bs)
+    return bs1, t0, nc
 
 
 #
 # 各データ点に対応する媒介変数値{t[i]:i=0,N-1}についての最適化
+# 各引数は、phase1()に同じ
 #
 def phase2(bs1, t1, r0, rate, loop, nc):
     g = tf.Graph()
@@ -143,17 +156,17 @@ def phase2(bs1, t1, r0, rate, loop, nc):
         tf.scalar_summary('diff', diff)
         summary_op = tf.merge_all_summaries()
 
-        with tf.Session(graph=g) as sess:
-            sess.run(init)
-            print_result('P2', nc, sess, diff, feed_dict)
-            for step in range(loop):
-                sess.run(train, feed_dict=feed_dict)
-                nc = nc + 1
-                if (step + 1) % 10 == 0:
-                    print_result('P2', nc, sess, diff, feed_dict)
-                    summary_str = sess.run(summary_op, feed_dict=feed_dict)
-                    summary_writer.add_summary(summary_str, nc)
-            t2 = sess.run(t)
+    with tf.Session(graph=g) as sess:
+        sess.run(init)
+        print_result('P2', nc, sess, diff, feed_dict)
+        for step in range(loop):
+            sess.run(train, feed_dict=feed_dict)
+            nc = nc + 1
+            if (step + 1) % 10 == 0:
+                print_result('P2', nc, sess, diff, feed_dict)
+                summary_str = sess.run(summary_op, feed_dict=feed_dict)
+                summary_writer.add_summary(summary_str, nc)
+        t2 = sess.run(t)
     return bs1, t2, nc
 
 
