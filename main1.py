@@ -58,32 +58,49 @@ def print_result(label, sess, diff):
 # 関数を使用する
 #
 def steps(bs0, t0, r0, nstep, rate, loop):
-    # 各データ点に対する媒介変数の値を最適化パラメータとする。t.shape=(N,)
-    t = tf.Variable(t0, tf.float32)
+    # 新しいGraphを作成
+    g = tf.Graph()
 
-    # 制御点を最適化パラメータとする。bs.shape = (4,2)
-    bs = tf.Variable(bs0, tf.float32)
+    # 作成したGraphをデフォルトにして、Operationを登録する
+    with g.as_default():
+        # [グラフの作成開始]
+        # 各データ点に対する媒介変数の値を最適化パラメータとする。t.shape=(N,)
+        t = tf.Variable(t0, tf.float32)
 
-    # 各制御点との積をとるための、tおよび(1-t)の冪。tpw.shape = (N, 4)
-    s = 1 - t
-    tpw = tf.transpose(tf.pack(
-        [s * s * s, 3 * s * s * t, 3 * s * t * t, t * t * t]))
+        # 制御点を最適化パラメータとする。bs.shape = (4,2)
+        bs = tf.Variable(bs0, tf.float32)
 
-    # 各{t_i;i=0,n-1}に対して、補完曲線を計算する。r.shape = (N, 2)
-    r = tf.matmul(tpw, bs)
+        # 各制御点との積をとるための、tおよび(1-t)の冪。tpw.shape = (4, N)
+        s = 1 - t
+        tpw = tf.pack([s * s * s, 3 * s * s * t, 3 * s * t * t, t * t * t])
 
-    init = tf.initialize_all_variables()
-    diff = tf.reduce_mean(tf.square(r - r0))
-    train = tf.train.GradientDescentOptimizer(rate).minimize(diff)
+        # 各{t_i;i=0,n-1}に対して、補完曲線を計算する。r.shape = (N, 2)
+        r = tf.matmul(tpw, bs, transpose_a=True)
 
-    with tf.Session() as sess:
+        # 変数の初期化操作
+        init = tf.initialize_all_variables()
+
+        # 目的関数（Loss関数）の作成操作
+        diff = tf.reduce_mean(tf.square(r - r0))
+
+        # 最適化操作
+        train = tf.train.GradientDescentOptimizer(rate).minimize(diff)
+        # [グラフの作成終了]
+
+    # Sessionを作成（明示的にGraphを渡す）
+    with tf.Session(graph=g) as sess:
+        # 初期化の実行
         sess.run(init)
         print_result(nstep, sess, diff)
+
         for step in range(loop):
+            # 最適化の実行
             sess.run(train)
             nstep = nstep + 1
             if nstep % 1000 == 0:
                 print_result(nstep, sess, diff)
+
+        # Tensorの値を出力
         bs1, t1 = sess.run([bs, t])
     return bs1, t1, nstep
 

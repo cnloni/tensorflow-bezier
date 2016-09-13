@@ -70,16 +70,15 @@ def phase1(bs0, t0, r0, rate, loop, nc):
         # ラベルとなるN個の教師データ。shape = (N,2)
         r_ = tf.placeholder(tf.float32, shape=(N, 2))
 
-        # tpw.shape = (N,4)
+        # tpw.shape = (4,N)
         s = 1 - t
-        tpw = tf.transpose(tf.pack(
-            [s * s * s, 3 * s * s * t, 3 * s * t * t, t * t * t]))
+        tpw = tf.pack([s * s * s, 3 * s * s * t, 3 * s * t * t, t * t * t])
 
         # 4個の制御点の座標。最適化パラメータ。bs.shape = (4,2)
         bs = tf.Variable(bs0, tf.float32)
 
         # 各データ点に対応する補完曲線上の点。r.shape = (N,2)
-        r = tf.matmul(tpw, bs)
+        r = tf.matmul(tpw, bs, transpose_a=True)
 
         # tf.Variableの初期化を行うOP
         init = tf.initialize_all_variables()
