@@ -42,6 +42,14 @@ def print_result(label, sess, diff):
         exit()
 
 
+def get_bs_names():
+    a = []
+    for k in range(4):
+        pref = 'bs_' + str(k)
+        a.append([pref+'x', pref+'y'])
+    return a
+
+
 #
 # 制御点座標{bs[k][m]:k=0,3;m=0,1}と、
 #   媒介変数{t[i]:i=0,N-1}について最適化
@@ -75,7 +83,7 @@ def steps(bs0, t0, r0, nstep, rate, loop):
         bs = tf.Variable(bs0, tf.float32, name='bs')
 
         # 各制御点との積をとるための、tおよび(1-t)の冪。T.shape = (4, N)
-        one = tf.constant(1, tf.float32, name='1')
+        one = tf.constant(1., tf.float32, name='1')
         s = one - t
         T = tf.pack([s * s * s, 3 * s * s * t, 3 * s * t * t, t * t * t])
 
@@ -92,10 +100,16 @@ def steps(bs0, t0, r0, nstep, rate, loop):
         train = tf.train.GradientDescentOptimizer(rate).minimize(diff)
 
         # [*1]
+        tf.scalar_summary('diff', diff)
+        tf.scalar_summary(get_bs_names(),bs)
+        summary_op = tf.merge_all_summaries()
+
         # [グラフの作成終了]
         g.finalize()
-  
+
     # [*2]
+    # SymmaryWriterの作成（グラフの作成が終了した後ならば、どこでも良い）
+    summary_writer = tf.train.SummaryWriter('cdata/main1-w', graph=g)
 
     # Sessionを作成（明示的にGraphを渡す）
     with tf.Session(graph=g) as sess:
@@ -110,6 +124,8 @@ def steps(bs0, t0, r0, nstep, rate, loop):
             if nstep % 1000 == 0:
                 print_result(nstep, sess, diff)
                 # [*3]
+                summary_str = sess.run(summary_op)
+                summary_writer.add_summary(summary_str, nstep)
 
         # Tensorの値を出力
         bs1, t1 = sess.run([bs, t])
@@ -132,5 +148,5 @@ def get_parameters(result_file):
 
 result_file = 'cdata/m-cap.2.main1.test.npz'
 r0, bs0, t0, nstep = get_parameters(result_file)
-bs1, t1, nstep = steps(bs0, t0, r0, nstep, 1e-4, 2000000)
-np.savez(result_file, bs=bs1, t=t1, nstep=nstep)
+bs1, t1, nstep = steps(bs0, t0, r0, nstep, 1e-4, 10000)
+#np.savez(result_file, bs=bs1, t=t1, nstep=nstep)
