@@ -60,6 +60,7 @@ def get_bs_names():
 # t0: データ点に対応する媒介変数の初期値。ndarray。shape=(n,)
 # r0: データ点の座標。ndarray。shape=(n,2)
 # rate: 学習係数
+# nstep: 総ステップ（中断後に実行する場合もある）
 # loop: 逐次回数
 #
 # 注) コード中の説明で、obj.shapeという表現は簡単のためであり、
@@ -67,7 +68,7 @@ def get_bs_names():
 # この場合には、tf.Tensorの場合にshapeを求めるには、tf.Tensor.get_shape()
 # 関数を使用する
 #
-def steps(bs0, t0, r0, nstep, rate, loop):
+def steps(bs0, t0, r0, rate, nstep, loop):
     # 新しいGraphを作成
     g = tf.Graph()
 
@@ -101,7 +102,8 @@ def steps(bs0, t0, r0, nstep, rate, loop):
 
         # [*1]
         tf.scalar_summary('diff', diff)
-        tf.scalar_summary(get_bs_names(),bs)
+        tf.scalar_summary([['bs0_x', 'bs0_y'], ['bs1_x','bs1_y'],
+            ['bs2_x', 'bs2_y'], ['bs3_x', 'bs3_y']], bs)
         summary_op = tf.merge_all_summaries()
 
         # [グラフの作成終了]
@@ -115,17 +117,20 @@ def steps(bs0, t0, r0, nstep, rate, loop):
     with tf.Session(graph=g) as sess:
         # 初期化の実行
         sess.run(init)
-        print_result(nstep, sess, diff)
+        # [*3]
+        summary_str = sess.run(summary_op)
+        summary_writer.add_summary(summary_str, 0)
+        # print(type(summary_str),len(summary_str))
 
         for step in range(loop):
             # 最適化の実行
             sess.run(train)
             nstep = nstep + 1
             if nstep % 1000 == 0:
-                print_result(nstep, sess, diff)
                 # [*3]
                 summary_str = sess.run(summary_op)
                 summary_writer.add_summary(summary_str, nstep)
+                # print(type(summary_str),len(summary_str))
 
         # Tensorの値を出力
         bs1, t1 = sess.run([bs, t])
@@ -148,5 +153,5 @@ def get_parameters(result_file):
 
 result_file = 'cdata/m-cap.2.main1.test.npz'
 r0, bs0, t0, nstep = get_parameters(result_file)
-bs1, t1, nstep = steps(bs0, t0, r0, nstep, 1e-4, 10000)
+bs1, t1, nstep = steps(bs0, t0, r0, 1e-4, nstep, 10000)
 #np.savez(result_file, bs=bs1, t=t1, nstep=nstep)

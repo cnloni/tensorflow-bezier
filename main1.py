@@ -52,6 +52,7 @@ def print_result(label, sess, diff):
 # t0: データ点に対応する媒介変数の初期値。ndarray。shape=(n,)
 # r0: データ点の座標。ndarray。shape=(n,2)
 # rate: 学習係数
+# nstep: 総ステップ（中断後に実行する場合もある）
 # loop: 逐次回数
 #
 # 注) コード中の説明で、obj.shapeという表現は簡単のためであり、
@@ -59,7 +60,7 @@ def print_result(label, sess, diff):
 # この場合には、tf.Tensorの場合にshapeを求めるには、tf.Tensor.get_shape()
 # 関数を使用する
 #
-def steps(bs0, t0, r0, nstep, rate, loop):
+def steps(bs0, t0, r0, rate, nstep, loop):
     # 新しいGraphを作成
     g = tf.Graph()
 
@@ -75,7 +76,7 @@ def steps(bs0, t0, r0, nstep, rate, loop):
         bs = tf.Variable(bs0, tf.float32, name='bs')
 
         # 各制御点との積をとるための、tおよび(1-t)の冪。T.shape = (4, N)
-        one = tf.constant(1, tf.float32, name='1')
+        one = tf.constant(1., tf.float32, name='1')
         s = one - t
         T = tf.pack([s * s * s, 3 * s * s * t, 3 * s * t * t, t * t * t])
 
@@ -94,6 +95,8 @@ def steps(bs0, t0, r0, nstep, rate, loop):
         # [*1]
         # [グラフの作成終了]
         g.finalize()
+
+        dummy = diff * 2.
   
     # [*2]
 
@@ -101,6 +104,7 @@ def steps(bs0, t0, r0, nstep, rate, loop):
     with tf.Session(graph=g) as sess:
         # 初期化の実行
         sess.run(init)
+        # [*3]
         print_result(nstep, sess, diff)
 
         for step in range(loop):
@@ -108,8 +112,8 @@ def steps(bs0, t0, r0, nstep, rate, loop):
             sess.run(train)
             nstep = nstep + 1
             if nstep % 1000 == 0:
-                print_result(nstep, sess, diff)
                 # [*3]
+                print_result(nstep, sess, diff)
 
         # Tensorの値を出力
         bs1, t1 = sess.run([bs, t])
@@ -132,5 +136,5 @@ def get_parameters(result_file):
 
 result_file = 'cdata/m-cap.2.main1.test.npz'
 r0, bs0, t0, nstep = get_parameters(result_file)
-bs1, t1, nstep = steps(bs0, t0, r0, nstep, 1e-4, 2000000)
+bs1, t1, nstep = steps(bs0, t0, r0, 1e-4, nstep, 2000000)
 np.savez(result_file, bs=bs1, t=t1, nstep=nstep)
