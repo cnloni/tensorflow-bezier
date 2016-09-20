@@ -36,5 +36,5 @@ plt.title('Fig.3', fontsize=20, fontweight='bold')
 plt.legend(['実装１', '実装２'], prop=fp, loc='center right')
 
 #plt.show()
-plt.savefig('fig3.png', dpi=50)
+plt.savefig('fig3.png', dpi=60)
 

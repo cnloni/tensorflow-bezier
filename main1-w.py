@@ -42,6 +42,14 @@ def print_result(label, sess, diff):
         exit()
 
 
+def get_bs_names():
+    a = []
+    for k in range(4):
+        pref = 'bs_' + str(k)
+        a.append([pref+'x', pref+'y'])
+    return a
+
+
 #
 # 制御点座標{bs[k][m]:k=0,3;m=0,1}と、
 #   媒介変数{t[i]:i=0,N-1}について最適化
@@ -93,19 +101,26 @@ def steps(bs0, t0, r0, rate, nstep, loop):
         train = tf.train.GradientDescentOptimizer(rate).minimize(diff)
 
         # [*1]
+        tf.scalar_summary('diff', diff)
+        tf.scalar_summary([['bs0_x', 'bs0_y'], ['bs1_x','bs1_y'],
+            ['bs2_x', 'bs2_y'], ['bs3_x', 'bs3_y']], bs)
+        summary_op = tf.merge_all_summaries()
+
         # [グラフの作成終了]
         g.finalize()
 
-        dummy = diff * 2.
-  
     # [*2]
+    # SymmaryWriterの作成（グラフの作成が終了した後ならば、どこでも良い）
+    summary_writer = tf.train.SummaryWriter('cdata/main1-w', graph=g)
 
     # Sessionを作成（明示的にGraphを渡す）
     with tf.Session(graph=g) as sess:
         # 初期化の実行
         sess.run(init)
         # [*3]
-        print_result(nstep, sess, diff)
+        summary_str = sess.run(summary_op)
+        summary_writer.add_summary(summary_str, 0)
+        # print(type(summary_str),len(summary_str))
 
         for step in range(loop):
             # 最適化の実行
@@ -113,7 +128,9 @@ def steps(bs0, t0, r0, rate, nstep, loop):
             nstep = nstep + 1
             if nstep % 1000 == 0:
                 # [*3]
-                print_result(nstep, sess, diff)
+                summary_str = sess.run(summary_op)
+                summary_writer.add_summary(summary_str, nstep)
+                # print(type(summary_str),len(summary_str))
 
         # Tensorの値を出力
         bs1, t1 = sess.run([bs, t])
@@ -136,5 +153,5 @@ def get_parameters(result_file):
 
 result_file = 'cdata/m-cap.2.main1.test.npz'
 r0, bs0, t0, nstep = get_parameters(result_file)
-bs1, t1, nstep = steps(bs0, t0, r0, 1e-4, nstep, 2000000)
-np.savez(result_file, bs=bs1, t=t1, nstep=nstep)
+bs1, t1, nstep = steps(bs0, t0, r0, 1e-4, nstep, 10000)
+#np.savez(result_file, bs=bs1, t=t1, nstep=nstep)
