@@ -5,18 +5,18 @@
 # real	0m41.655s for common sessions in GraphPhase1/GraphPhase2 on myboy
 #
 import numpy as np
-import fitter4 as ft
+import fitter4
 
 def do_cycle(nd, r0):
-    bs2 = ft.get_initial_control_points(r0)
-    t2 = ft.get_initial_ts(r0, bs2)
-    gr1 = ft.GraphPhase1(0.5)
-    gr2 = ft.GraphPhase2(1e-5, len(t2))
-    writer = ft.create_summary_writer('cdata/main4')
+    bs2 = fitter4.get_initial_control_points(r0)
+    t2 = fitter4.get_initial_ts(r0, bs2)
+    gr1 = fitter4.GraphPhase1(0.5)
+    gr2 = fitter4.GraphPhase2(1e-5, len(t2))
+    writer = fitter4.create_summary_writer('cdata/main4')
     gr1.set_summary_writer(writer)
     gr2.set_summary_writer(writer)
     writer.add_graph(gr1.get_graph())
-    dk = ft.DataKeeper()
+    dk = fitter4.DataKeeper()
     nc = 0
     dk.append(bs2, t2, nc)
     for id in range(nd):
