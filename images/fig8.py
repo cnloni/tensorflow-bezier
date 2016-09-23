@@ -14,7 +14,7 @@ ax.set_yticks([-200, -100, 0, 100, 200])
 ax.set_title('Fig.8', fontsize=20, fontweight='bold')
 
 gr1 = fitter4.GraphPhase1()
-data = np.load('../cdata/m-cap.2.main4.npz')
+data = np.load('../data/m-cap.2.main4.npz')
 bss = data['bss']
 t = np.linspace(0., 1., 101)
 
@@ -32,7 +32,7 @@ for i in range(4):
         fontsize=14, ha='center', va='center',
         arrowprops=ap)
 
-r0 = np.loadtxt('../cdata/m-cap.2.dat', delimiter=',')
+r0 = np.loadtxt('../data/m-cap.2.dat', delimiter=',')
 ax.plot(r0[:,0], r0[:,1], color='r', marker='o', markersize=10, linestyle='None')
 
 r = gr1.get_points(bss[-1], t)

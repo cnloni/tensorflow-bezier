@@ -111,7 +111,7 @@ def steps(bs0, t0, r0, rate, nstep, loop):
 
     # [*2]
     # SymmaryWriterの作成（グラフの作成が終了した後ならば、どこでも良い）
-    summary_writer = tf.train.SummaryWriter('cdata/main1-w', graph=g)
+    summary_writer = tf.train.SummaryWriter('data/main1-w', graph=g)
 
     # Sessionを作成（明示的にGraphを渡す）
     with tf.Session(graph=g) as sess:
@@ -138,7 +138,7 @@ def steps(bs0, t0, r0, rate, nstep, loop):
 
 
 def get_parameters(result_file):
-    r0 = np.loadtxt('cdata/m-cap.2.dat', delimiter=',')
+    r0 = np.loadtxt('data/m-cap.2.dat', delimiter=',')
     if os.path.exists(result_file):
         data = np.load(result_file)
         bs0 = data['bs']
@@ -151,7 +151,7 @@ def get_parameters(result_file):
     return r0, bs0, t0, nstep
 
 
-result_file = 'cdata/m-cap.2.main1.test.npz'
+result_file = 'data/m-cap.2.main1.test.npz'
 r0, bs0, t0, nstep = get_parameters(result_file)
 bs1, t1, nstep = steps(bs0, t0, r0, 1e-4, nstep, 10000)
 #np.savez(result_file, bs=bs1, t=t1, nstep=nstep)

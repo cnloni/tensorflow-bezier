@@ -16,12 +16,12 @@ ax.set_xticks([-200, -100, 0, 100, 200])
 ax.set_yticks([-200, -100, 0, 100, 200])
 ax.set_title('Fig.5', fontsize=20, fontweight='bold')
 
-r0 = np.loadtxt('../cdata/m-cap.2.dat', delimiter=',')
+r0 = np.loadtxt('../data/m-cap.2.dat', delimiter=',')
 ax.plot(r0[:,0], r0[:,1], color='r', marker='o', markersize=10, linestyle='None')
 
 gr1 = ft.GraphPhase1()
 
-data2 = np.load('../cdata/m-cap.2.main1.npz')
+data2 = np.load('../data/m-cap.2.main1.npz')
 bs = data2['bs']
 t2 = data2['t']
 
@@ -29,7 +29,7 @@ t = np.linspace(t2[0], t2[-1], 101)
 r = gr1.get_points(bs, t)
 ax.plot(r[:,0], r[:,1], color='red')
 
-data1 = np.load('../cdata/m-cap.2.main4.npz')
+data1 = np.load('../data/m-cap.2.main4.npz')
 bss = data1['bss']
 t = np.linspace(0., 1., 101)
 

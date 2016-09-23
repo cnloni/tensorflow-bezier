@@ -160,7 +160,7 @@ def do_cycle(nd, r0):
     return bs2, t2, nstep
 
 
-r0 = np.loadtxt('cdata/m-cap.2.dat', delimiter=',')
+r0 = np.loadtxt('data/m-cap.2.dat', delimiter=',')
 nstepycles = 80
 bsn, tn, nstep = do_cycle(nstepycles, r0)
-np.savez('cdata/m-cap.2.main3.npz', bs=bsn, t=tn, nstep=nstep)
+np.savez('data/m-cap.2.main3.npz', bs=bsn, t=tn, nstep=nstep)

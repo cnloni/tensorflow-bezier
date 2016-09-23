@@ -5,8 +5,8 @@ from matplotlib.font_manager import FontProperties
 
 fp = FontProperties(fname=r'/usr/share/fonts/truetype/fonts-japanese-gothic.ttf', size=18)
 
-file1 = '../cdata/main3.res'
-file2 = '../cdata/main1.1e-5.res'
+file1 = '../data/main3.res'
+file2 = '../data/main1.1e-5.res'
 
 fig = plt.figure(figsize=(8., 6.), frameon=False)
 ax = fig.add_subplot(111)

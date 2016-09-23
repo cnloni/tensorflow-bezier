@@ -121,7 +121,7 @@ def steps(bs0, t0, r0, rate, nstep, loop):
 
 
 def get_parameters(result_file):
-    r0 = np.loadtxt('cdata/m-cap.2.dat', delimiter=',')
+    r0 = np.loadtxt('data/m-cap.2.dat', delimiter=',')
     if os.path.exists(result_file):
         data = np.load(result_file)
         bs0 = data['bs']
@@ -134,7 +134,7 @@ def get_parameters(result_file):
     return r0, bs0, t0, nstep
 
 
-result_file = 'cdata/m-cap.2.main1.test.npz'
+result_file = 'data/m-cap.2.main1.npz'
 r0, bs0, t0, nstep = get_parameters(result_file)
 bs1, t1, nstep = steps(bs0, t0, r0, 1e-4, nstep, 2000000)
 np.savez(result_file, bs=bs1, t=t1, nstep=nstep)
